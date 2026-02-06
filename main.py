@@ -340,5 +340,10 @@ elif page == "Impressum":
 
     st.header("Impressum")
     st.write("Kontakt, Impressum, Projektbeschreibung")
-    st.caption(f"Datenstand: {df.iloc[0]['version']}")
+    
+    if "version" in df.columns:
+        st.caption(f"📊 Datenstand: {df.iloc[0]['version']}")
+    else:
+        st.caption("📊 Datenstand: nicht angegeben")
+
 
