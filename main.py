@@ -170,7 +170,7 @@ def show_search_page():
 
         submitted = st.form_submit_button("Suchen")
 
-    # 🔑 Enter ODER Button → gleicher Code
+    # Enter ODER Button → gleicher Code
     if submitted:
         results = search_phrasemes(
             df,
@@ -236,18 +236,18 @@ def show_phrasem_card():
         st.markdown(f"**Thema:** {' – '.join(themen)}")
 
     if phrasem["sprachstil_hereglee"]:
-        st.markdown(f"**Хэрэглээ:** {phrasem['sprachstil_hereglee']}")
+        st.markdown(f"**Register:** {phrasem['sprachstil_hereglee']}")
 
     if phrasem["hinweis_tailbar"]:
-        st.markdown(f"**Тайлбар:** {phrasem['hinweis_tailbar']}")
+        st.markdown(f"**Anmerkung:** {phrasem['hinweis_tailbar']}")
 
     if phrasem["grammatik_anhaar"]:
-        st.markdown(f"**Анхаар!** {phrasem['grammatik_anhaar']}")
+        st.markdown(f"**Grammatische Besonderheit:** {phrasem['grammatik_anhaar']}")
 
     if phrasem["herkunft_garal"]:
-        st.markdown(f"**Гарал:** {phrasem['herkunft_garal']}")
+        st.markdown(f"**Herkunft:** {phrasem['herkunft_garal']}")
     
-    st.markdown("**Жишээ:**")
+    st.markdown("**Beispiele:**")
     for b in ["beispiel_1", "beispiel_2", "beispiel_3"]:
         if phrasem[b]:
             st.write("•", phrasem[b])
