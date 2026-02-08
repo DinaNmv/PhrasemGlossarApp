@@ -1,6 +1,29 @@
+#Code - Version 08.02.2026 - Kursive Markierung, Liste fertig
+
 import streamlit as st
 import pandas as pd
 import random
+import re
+
+st.markdown("""
+<style>
+div.stButton > button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: #1f77b4;
+    text-align: left;
+}
+div.stButton > button {
+    color: #1f77b4;
+    font-size: 0.95rem;
+}
+
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 # --------------------------------------------------
 # Initialisierung Session State
@@ -20,6 +43,23 @@ if "current_index" not in st.session_state:
 if "random_mode" not in st.session_state:
     st.session_state.random_mode = False
 
+if "active_results" not in st.session_state:
+    st.session_state.active_results = None
+
+if "active_index" not in st.session_state:
+    st.session_state.active_index = 0
+
+if "active_source" not in st.session_state:
+    st.session_state.active_source = None
+
+if "last_page" not in st.session_state:
+    st.session_state.last_page = "Startseite"
+
+if "list_scroll_key" not in st.session_state:
+    st.session_state.list_scroll_key = None
+
+
+
 # --------------------------------------------------
 # Daten laden (Excel)
 # --------------------------------------------------
@@ -31,6 +71,15 @@ def load_data():
 
 
 df = load_data()
+
+#DEBUG TESTEN:
+
+#st.write("DEBUG – Spaltennamen aus Excel:")
+#for c in df.columns:
+    #st.write(f"→ '{c}'")
+
+#import os
+#st.write("DEBUG – Excel-Datei existiert:", os.path.exists("tabelle_1_main.xlsx"))
 
 
 # --------------------------------------------------
@@ -86,6 +135,54 @@ def search_phrasemes(df, query, mode, theme_filter, style_filter):
 
 
 # --------------------------------------------------
+# Text-Highlighting (Phrasem & deutsche Wörter)
+# --------------------------------------------------
+
+
+def highlight_words(text, highlight_words):
+    if not isinstance(text, str):
+        return text
+
+    if not isinstance(highlight_words, str) or not highlight_words.strip():
+        return text
+
+    words = [w.strip() for w in highlight_words.split(";") if w.strip()]
+
+    for w in words:
+        pattern = re.compile(re.escape(w), re.IGNORECASE)
+        text = pattern.sub(r"_\g<0>_", text)
+
+    return text
+
+
+
+def show_list_by_themes():
+    st.header("📚 Phraseme nach Themen")
+
+    for theme in get_all_themes(df):
+        with st.expander(theme, expanded=False):
+
+            subset = df[
+                (df["thema_1"] == theme)
+                | (df["thema_2"] == theme)
+                | (df["thema_3"] == theme)
+            ].reset_index(drop=True)
+
+            for idx, row in subset.iterrows():
+                if st.button(
+                    f"– {row['phrasem_de']}",
+                    key=f"accordion_{theme}_{row['phrasem_id']}"
+                ):
+                    st.session_state.active_results = subset
+                    st.session_state.active_index = idx
+                    st.session_state.active_source = "list"
+                    st.session_state.view = "detail"
+                    st.rerun()
+
+
+
+
+# --------------------------------------------------
 # UI-Komponenten
 # --------------------------------------------------
 def sidebar_navigation():
@@ -99,25 +196,27 @@ def sidebar_navigation():
                 "Theorie Phraseologie",
                 "Impressum",
             ],
+            key="page_radio"
         )
 
-        st.markdown("")
-        st.markdown(
-            """
-            <div style="
-                position: fixed;
-                bottom: 10px;
-                left: 10px;
-                font-size: 0.8em;
-                color: gray;
-            ">
-                GIP-Projekt von MUBIS und RUB <br>Mit Unterstützung vom DAAD
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        # Abstand nach unten
+        #st.markdown("<br><br><br><br>", unsafe_allow_html=True)
+
+        # Footer im Sidebar
+        st.markdown("") 
+        st.markdown( """ <div style=" position: fixed; bottom: 10px; left: 10px; font-size: 0.8em; color: gray; "> GIP-Projekt von MUBIS und RUB <br>Mit Unterstützung vom DAAD </div> """, unsafe_allow_html=True, )
+
+    # 👉 Seitenwechsel-Logik AUSSERHALB des Sidebars
+    if "last_page" not in st.session_state:
+        st.session_state.last_page = page
+
+    if page != st.session_state.last_page:
+        st.session_state.view = "search"
+        st.session_state.random_mode = False
+        st.session_state.last_page = page
 
     return page
+
 
 
 def show_search_page():
@@ -143,7 +242,7 @@ def show_search_page():
         )
 
         search_mode = st.radio(
-            "Suchoption",
+            "Suchoption:",
             ["OR", "AND", "EXACT"],
             format_func=lambda x: {
                 "OR": "eines der Wörter",
@@ -189,34 +288,36 @@ def show_search_page():
 def show_results():
     results = st.session_state.search_results
 
-    # Noch keine Suche ausgeführt
     if results is None:
         return
 
-    # Suche ohne Treffer
     if results.empty:
-        st.markdown(
-            "<h5 style='color:gray'>Treffer gefunden: 0 </h5>",
-            unsafe_allow_html=True,
-            )
-        st.info("Versuche einen anderen Suchbegriff oder ändere die Filter.")
+        st.info("Keine Treffer gefunden.")
         return
 
-    # Treffer vorhanden
-    st.markdown(f"<h5 style='color:gray'>Treffer gefunden: {len(results)} </h5>", unsafe_allow_html=True,)
+    st.markdown(
+        f"<h5 style='color:gray'>Treffer gefunden: {len(results)}</h5>",
+        unsafe_allow_html=True,
+    )
 
-    for idx, row in results.reset_index(drop=True).iterrows():
-        if st.button(row["phrasem_de"], key=row["phrasem_id"]):
-            st.session_state.selected_phrasem_id = row["phrasem_id"]
-            st.session_state.current_index = idx
+    results = results.reset_index(drop=True)
+
+    for idx, row in results.iterrows():
+        if st.button(row["phrasem_de"], key=f"search_{row['phrasem_id']}"):
+            st.session_state.active_results = results
+            st.session_state.active_index = idx
+            st.session_state.active_source = "search"
             st.session_state.view = "detail"
             st.rerun()
 
 
-
 def show_phrasem_card():
-    results = st.session_state.search_results
-    idx = st.session_state.current_index
+    results = st.session_state.active_results
+    idx = st.session_state.active_index
+
+    if results is None or results.empty:
+        st.warning("Kein Phrasem ausgewählt.")
+        return
 
     phrasem = results.iloc[idx]
 
@@ -239,50 +340,74 @@ def show_phrasem_card():
         st.markdown(f"**Register:** {phrasem['sprachstil_hereglee']}")
 
     if phrasem["hinweis_tailbar"]:
-        st.markdown(f"**Anmerkung:** {phrasem['hinweis_tailbar']}")
+        text = highlight_words(
+            phrasem["hinweis_tailbar"],
+            phrasem.get("highlight_words", "")
+        )
+        st.markdown("**Anmerkung:**")
+        st.markdown(text)
 
     if phrasem["grammatik_anhaar"]:
-        st.markdown(f"**Grammatische Besonderheit:** {phrasem['grammatik_anhaar']}")
+        text = highlight_words(
+            phrasem["grammatik_anhaar"],
+            phrasem.get("highlight_words", "")
+        )
+        st.markdown("**Grammatische Besonderheit:**")
+        st.markdown(text)
 
     if phrasem["herkunft_garal"]:
-        st.markdown(f"**Herkunft:** {phrasem['herkunft_garal']}")
-    
+        text = highlight_words(
+            phrasem["herkunft_garal"],
+            phrasem.get("highlight_words", "")
+        )
+        st.markdown("**Herkunft:**")
+        st.markdown(text)
+
     st.markdown("**Beispiele:**")
     for b in ["beispiel_1", "beispiel_2", "beispiel_3"]:
-        if phrasem[b]:
-            st.write("•", phrasem[b])
+        if phrasem.get(b):
+            text = highlight_words(
+                phrasem[b],
+                phrasem.get("highlight_words", "")
+            )
+            st.markdown(f"• {text}")
 
     st.divider()
 
-    if st.session_state.random_mode:
+    # -------- Navigation --------
+    col1, col2 = st.columns(2)
 
-        if st.button("🎲 Weiteres zufälliges Phrasem"):
-            show_random_phrasem()
-
-    else:
-        col1, col2 = st.columns(2)
-
-        with col1:
-            if st.button("← Zurück zur Trefferliste"):
+    with col1:
+        if st.button("Zurück"):
+            if st.session_state.active_source == "list":
+                st.session_state.view = "list"
+            else:
                 st.session_state.view = "search"
+            st.rerun()
+
+
+
+    with col2:
+        if st.button("Weiter"):
+            if idx + 1 < len(results):
+                st.session_state.active_index += 1
+                st.rerun()
+            else:
+                # Ende → zurück
+                if st.session_state.active_source == "search":
+                    st.session_state.view = "search"
+                elif st.session_state.active_source == "list":
+                    st.session_state.view = "list"
                 st.rerun()
 
-        with col2:
-            if st.button("Weiteres Phrasem"):
-                if st.session_state.current_index + 1 < len(st.session_state.search_results):
-                    st.session_state.current_index += 1
-                    st.rerun()
-                else:
-                    st.session_state.view = "search"
-                    st.rerun()
 
 
 def show_random_phrasem():
-    random_row = df.sample(1).iloc[0]
+    random_row = df.sample(1)
 
-    st.session_state.random_mode = True
-    st.session_state.search_results = df.loc[[random_row.name]]
-    st.session_state.current_index = 0
+    st.session_state.active_results = random_row.reset_index(drop=True)
+    st.session_state.active_index = 0
+    st.session_state.active_source = "random"
     st.session_state.view = "detail"
 
 
@@ -304,42 +429,31 @@ if page == "Startseite":
         show_phrasem_card()
 
 
+elif page == "Liste nach Themen":
+    st.session_state.random_mode = False
+
+    if st.session_state.view == "detail":
+        show_phrasem_card()
+    else:
+        st.session_state.view = "list"
+        show_list_by_themes()
+
+
 elif page == "Zufälliges Phrasem":
     st.session_state.random_mode = True
     show_random_phrasem()
     show_phrasem_card()
 
 
-elif page == "Liste nach Themen":
-    st.session_state.view = "search"
-    st.session_state.random_mode = False
-
-    st.header("📚 Phraseme nach Themen")
-    for theme in get_all_themes(df):
-        st.subheader(theme)
-        subset = df[
-            (df["thema_1"] == theme)
-            | (df["thema_2"] == theme)
-            | (df["thema_3"] == theme)
-        ]
-        for _, row in subset.iterrows():
-            st.write("–", row["phrasem_de"])
-
-
 elif page == "Theorie Phraseologie":
-    st.session_state.view = "search"
-    st.session_state.random_mode = False
-
     st.header("Theorie Phraseologie")
     st.write("Hier kommt später die Theorie …")
 
 
 elif page == "Impressum":
-    st.session_state.view = "search"
-    st.session_state.random_mode = False
-
     st.header("Impressum")
     st.write("Kontakt, Impressum, Projektbeschreibung")
+
     
     if "version" in df.columns:
         st.caption(f"📊 Datenstand: {df.iloc[0]['version']}")
