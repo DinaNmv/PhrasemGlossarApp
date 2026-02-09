@@ -1,4 +1,4 @@
-#Code - Version 09.02.2026 - Kursive Markierung Update2, Liste fertig
+#Code - Version 09.02.2026 23.30 - Suchfunktion nach Woertern und Themen, plaseholder
 
 import streamlit as st
 import pandas as pd
@@ -102,13 +102,47 @@ SEARCH_COLUMNS = [
 
 # bauen aus Phrasem + Themen einen Suchtext:
 def row_contains_any(row, words):
-    text = " ".join(str(row[col]).lower() for col in SEARCH_COLUMNS)
-    return any(w in text for w in words)
+    text = " ".join(str(row[col]) for col in SEARCH_COLUMNS).lower()
+
+    text_words = text.split()
+    normalized_text_words = [normalize_word(w) for w in text_words]
+
+    normalized_query_words = [normalize_word(w) for w in words]
+
+    return any(
+        qw in tw
+        for qw in normalized_query_words
+        for tw in normalized_text_words
+    )
 
 
 def row_contains_all(row, words):
-    text = " ".join(str(row[col]).lower() for col in SEARCH_COLUMNS)
-    return all(w in text for w in words)
+    text = " ".join(str(row[col]) for col in SEARCH_COLUMNS).lower()
+
+    text_words = text.split()
+    normalized_text_words = [normalize_word(w) for w in text_words]
+
+    normalized_query_words = [normalize_word(w) for w in words]
+
+    return all(
+        any(qw in tw for tw in normalized_text_words)
+        for qw in normalized_query_words
+    )
+
+
+#Wortsuche optimierung
+def normalize_word(word):
+    word = word.lower()
+    endings = [
+        "lich", "keit", "heit", "ung", "en", "er", "e", "n", "s"
+    ]
+
+    for end in endings:
+        if word.endswith(end) and len(word) > len(end) + 3:
+            word = word[:-len(end)]
+            break
+
+    return word
 
 
 
@@ -275,7 +309,8 @@ def show_search_page():
 
         query = st.text_input(
             "Suchbegriff:",
-            key="search_query"
+            key="search_query",
+            placeholder="z. B. Liebe, blau, spielen..."
         )
 
         search_mode = st.radio(
