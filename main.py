@@ -1,4 +1,4 @@
-#Code - Version 08.02.2026 - Kursive Markierung, Liste fertig
+#Code - Version 08.02.2026 - Kursive Markierung Update2, Liste fertig
 
 import streamlit as st
 import pandas as pd
@@ -146,13 +146,18 @@ def highlight_words(text, highlight_words):
     if not isinstance(highlight_words, str) or not highlight_words.strip():
         return text
 
+    # Wörter aus der Spalte
     words = [w.strip() for w in highlight_words.split(";") if w.strip()]
 
+    # Längere Wörter zuerst (gemacht vor mach)
+    words = sorted(words, key=len, reverse=True)
+
     for w in words:
-        pattern = re.compile(re.escape(w), re.IGNORECASE)
+        pattern = re.compile(rf"\b{re.escape(w)}\b", re.IGNORECASE)
         text = pattern.sub(r"_\g<0>_", text)
 
     return text
+
 
 
 
