@@ -1,4 +1,4 @@
-#Code - Version 08.02.2026 - Kursive Markierung Update2, Liste fertig
+#Code - Version 09.02.2026 - Kursive Markierung Update2, Liste fertig
 
 import streamlit as st
 import pandas as pd
@@ -92,44 +92,76 @@ def get_all_themes(dataframe):
     themes.discard("")
     return sorted(themes)
 
+# Spalten, die bei der Textsuche berücksichtigt werden
+SEARCH_COLUMNS = [
+    "phrasem_de",
+    "thema_1",
+    "thema_2",
+    "thema_3",
+]
+
+# bauen aus Phrasem + Themen einen Suchtext:
+def row_contains_any(row, words):
+    text = " ".join(str(row[col]).lower() for col in SEARCH_COLUMNS)
+    return any(w in text for w in words)
+
+
+def row_contains_all(row, words):
+    text = " ".join(str(row[col]).lower() for col in SEARCH_COLUMNS)
+    return all(w in text for w in words)
+
+
 
 def search_phrasemes(df, query, mode, theme_filter, style_filter):
     results = df.copy()
 
-    # --- Textsuche ---
+    # -----------------------------
+    # Textsuche (Phrasem + Themen)
+    # -----------------------------
     if query:
-        query = query.lower()
+        words = query.lower().split()
+
         if mode == "OR":
-            words = query.split()
-            mask = results["phrasem_de"].str.lower().apply(
-                lambda x: any(w in x for w in words)
+            mask = results.apply(
+                lambda row: row_contains_any(row, words),
+                axis=1
             )
             results = results[mask]
 
         elif mode == "AND":
-            words = query.split()
-            mask = results["phrasem_de"].str.lower().apply(
-                lambda x: all(w in x for w in words)
+            mask = results.apply(
+                lambda row: row_contains_all(row, words),
+                axis=1
             )
             results = results[mask]
 
         elif mode == "EXACT":
-            results = results[
-                results["phrasem_de"].str.lower().str.contains(query, regex=False)
-            ]
+            query_l = query.lower()
+            mask = results.apply(
+                lambda row: query_l in " ".join(
+                    str(row[col]).lower() for col in SEARCH_COLUMNS
+                ),
+                axis=1
+            )
+            results = results[mask]
 
-    # --- Themenfilter ---
+    # -----------------------------
+    # Themenfilter (Selectbox)
+    # -----------------------------
     if theme_filter:
-        mask = (
+        results = results[
             (results["thema_1"] == theme_filter)
             | (results["thema_2"] == theme_filter)
             | (results["thema_3"] == theme_filter)
-        )
-        results = results[mask]
+        ]
 
-    # --- Sprachstilfilter ---
+    # -----------------------------
+    # Sprachstilfilter
+    # -----------------------------
     if style_filter:
-        results = results[results["sprachstil_hereglee"] == style_filter]
+        results = results[
+            results["sprachstil_hereglee"] == style_filter
+        ]
 
     return results.sort_values("phrasem_de")
 
