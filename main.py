@@ -1,4 +1,4 @@
-#Code - Version 09.02.2026 23.30 - Suchfunktion nach Woertern und Themen, plaseholder
+#Code - Version 15.02.2026 17.30 - Äquivalente und Varianten, kursive und graue Markierung
 
 import streamlit as st
 import pandas as pd
@@ -100,7 +100,7 @@ SEARCH_COLUMNS = [
     "thema_3",
 ]
 
-# bauen aus Phrasem + Themen einen Suchtext:
+# aus Phrasem + Themen einen Suchtext:
 def row_contains_any(row, words):
     text = " ".join(str(row[col]) for col in SEARCH_COLUMNS).lower()
 
@@ -205,25 +205,31 @@ def search_phrasemes(df, query, mode, theme_filter, style_filter):
 # --------------------------------------------------
 
 
-def highlight_words(text, highlight_words):
+def highlight_words(text, highlight_words, gray=False):
+
     if not isinstance(text, str):
         return text
 
     if not isinstance(highlight_words, str) or not highlight_words.strip():
         return text
 
-    # Wörter aus der Spalte
     words = [w.strip() for w in highlight_words.split(";") if w.strip()]
 
-    # Längere Wörter zuerst (gemacht vor mach)
+    # längere Wörter zuerst → verhindert Teil-Ersetzungen
     words = sorted(words, key=len, reverse=True)
 
     for w in words:
-        pattern = re.compile(rf"\b{re.escape(w)}\b", re.IGNORECASE)
-        text = pattern.sub(r"_\g<0>_", text)
+
+        pattern = re.compile(re.escape(w), re.IGNORECASE)
+
+        if gray:
+            replacement = lambda m: f"<span style='color:#777'><em>{m.group(0)}</em></span>"
+        else:
+            replacement = lambda m: f"<em>{m.group(0)}</em>"
+
+        text = pattern.sub(replacement, text)
 
     return text
-
 
 
 
@@ -277,7 +283,7 @@ def sidebar_navigation():
         st.markdown("") 
         st.markdown( """ <div style=" position: fixed; bottom: 10px; left: 10px; font-size: 0.8em; color: gray; "> GIP-Projekt von MUBIS und RUB <br>Mit Unterstützung vom DAAD </div> """, unsafe_allow_html=True, )
 
-    # 👉 Seitenwechsel-Logik AUSSERHALB des Sidebars
+    # Seitenwechsel-Logik AUSSERHALB des Sidebars
     if "last_page" not in st.session_state:
         st.session_state.last_page = page
 
@@ -291,8 +297,7 @@ def sidebar_navigation():
 
 
 def show_search_page():
-    #st.header("Phraseologisches Glossar")
-    #st.subheader("Deutsch – Mongolisch")
+
     st.markdown(
     """
     <h1 style="color:#1f77b4;">Phraseologisches Glossar</h1>
@@ -417,7 +422,7 @@ def show_phrasem_card():
             phrasem.get("highlight_words", "")
         )
         st.markdown("**Anmerkung:**")
-        st.markdown(text)
+        st.markdown(f"{text}", unsafe_allow_html=True)
 
     if phrasem["grammatik_anhaar"]:
         text = highlight_words(
@@ -425,7 +430,7 @@ def show_phrasem_card():
             phrasem.get("highlight_words", "")
         )
         st.markdown("**Grammatische Besonderheit:**")
-        st.markdown(text)
+        st.markdown(f"{text}", unsafe_allow_html=True)
 
     if phrasem["herkunft_garal"]:
         text = highlight_words(
@@ -433,16 +438,33 @@ def show_phrasem_card():
             phrasem.get("highlight_words", "")
         )
         st.markdown("**Herkunft:**")
-        st.markdown(text)
+        st.markdown(f"{text}", unsafe_allow_html=True)
 
     st.markdown("**Beispiele:**")
-    for b in ["beispiel_1", "beispiel_2", "beispiel_3"]:
+    for b in ["beispiel_1", "beispiel_2", "beispiel_3", "beispiel_4", "beispiel_5", "beispiel_6"]:
         if phrasem.get(b):
             text = highlight_words(
                 phrasem[b],
-                phrasem.get("highlight_words", "")
+                phrasem.get("highlight_words", ""),
+                gray=True
             )
-            st.markdown(f"• {text}")
+            st.markdown(f"• {text}", unsafe_allow_html=True)
+
+
+    if phrasem.get("aequivalent_adil"):
+
+        st.markdown("**Äquivalente und Varianten:**")
+
+        items = [x.strip() for x in phrasem["aequivalent_adil"].split(";") if x.strip()]
+
+        for i in items:
+            st.markdown(
+                f"– <span style='color:#777'><em>{i}</em></span>",
+                unsafe_allow_html=True
+            )
+
+
+
 
     st.divider()
 
