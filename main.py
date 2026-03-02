@@ -1,4 +1,4 @@
-#Code - Version 02.03.2026 16.45 - Kursive Markierung geprüft, aktuelle Tabelle Checkfunktion
+#Code - Version 02.03.2026 18.50 - Kursive Markierung geprüft, aktuelle Tabelle Checkfunktion, Kontaktformular
 
 import streamlit as st
 import pandas as pd
@@ -6,6 +6,8 @@ import random
 import re
 import os
 import time
+import streamlit.components.v1 as components
+
 
 st.markdown("""
 <style>
@@ -65,15 +67,6 @@ if "list_scroll_key" not in st.session_state:
 # --------------------------------------------------
 # Daten laden (Excel)
 # --------------------------------------------------
-#@st.cache_data
-#def load_data():
-    #df = pd.read_excel("tabelle_1_main.xlsx")
-    #df = df.fillna("")
-    #return df
-
-
-#df = load_data()
-
 
 @st.cache_data
 def load_data(file_path, file_mtime):
@@ -521,7 +514,6 @@ def show_random_phrasem():
     st.session_state.view = "detail"
 
 
-
 # --------------------------------------------------
 # App-Logik
 # --------------------------------------------------
@@ -562,8 +554,37 @@ elif page == "Theorie Phraseologie":
 
 elif page == "Impressum":
     st.header("Impressum")
-    st.write("Kontakt, Impressum, Projektbeschreibung")
+    st.write("Impressum, Projektbeschreibung, Kontakt")
 
+    st.markdown("---")
+
+    st.markdown("""
+    **Angaben gemäß § 5 TMG**
+
+    Max Mustermann  
+    Musterstraße 1  
+    12345 Musterstadt  
+    Deutschland  
+    """)
+
+    st.markdown("---")
+
+    # GOOGLE FORM LINK
+    form_url = "https://docs.google.com/forms/d/e/1FAIpQLSe2kGpkTJuEx6G7T8ywPklhulf7lhob0eT_JlDrn442IgSZIQ/viewform?usp=dialog"
+
+    components.iframe(
+        form_url,
+        height=550,
+        scrolling=True
+    )
+
+    #st.markdown(
+        #"[Google-Datenschutzerklärung](https://policies.google.com/privacy?hl=de)"
+    #)
+
+
+
+    st.markdown("---")
     
     if "version" in df.columns:
         st.caption(f"📊 Datenstand: {df.iloc[0]['version']}")
