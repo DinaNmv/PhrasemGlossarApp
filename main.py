@@ -1,9 +1,11 @@
-#Code - Version 02.03.2026 16.00 - Äquivalente und Varianten, kursive Markierung geprüft
+#Code - Version 02.03.2026 16.45 - Kursive Markierung geprüft, aktuelle Tabelle Checkfunktion
 
 import streamlit as st
 import pandas as pd
 import random
 import re
+import os
+import time
 
 st.markdown("""
 <style>
@@ -63,14 +65,27 @@ if "list_scroll_key" not in st.session_state:
 # --------------------------------------------------
 # Daten laden (Excel)
 # --------------------------------------------------
+#@st.cache_data
+#def load_data():
+    #df = pd.read_excel("tabelle_1_main.xlsx")
+    #df = df.fillna("")
+    #return df
+
+
+#df = load_data()
+
+
 @st.cache_data
-def load_data():
-    df = pd.read_excel("tabelle_1_main.xlsx")
+def load_data(file_path, file_mtime):
+    df = pd.read_excel(file_path)
     df = df.fillna("")
+    df = df.astype(str)  # alles als String erzwingen
     return df
 
+file_path = "tabelle_1_main.xlsx"
+file_mtime = os.path.getmtime(file_path)
 
-df = load_data()
+df = load_data(file_path, file_mtime)
 
 #DEBUG TESTEN:
 
