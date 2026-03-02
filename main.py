@@ -1,4 +1,4 @@
-#Code - Version 15.02.2026 17.30 - Äquivalente und Varianten, kursive und graue Markierung
+#Code - Version 02.03.2026 16.00 - Äquivalente und Varianten, kursive Markierung geprüft
 
 import streamlit as st
 import pandas as pd
@@ -220,7 +220,8 @@ def highlight_words(text, highlight_words, gray=False):
 
     for w in words:
 
-        pattern = re.compile(re.escape(w), re.IGNORECASE)
+        # Wortgrenzen verwendet
+        pattern = re.compile(rf"\b{re.escape(w)}\b", re.IGNORECASE)
 
         if gray:
             replacement = lambda m: f"<span style='color:#777'><em>{m.group(0)}</em></span>"
