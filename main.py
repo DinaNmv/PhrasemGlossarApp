@@ -1,4 +1,4 @@
-#Code - Version 02.03.2026 18.50 - Kursive Markierung geprüft, aktuelle Tabelle Checkfunktion, Kontaktformular
+#Code - Version 10.03.2026 20.50 - Neue Hintergrund- und Schriftfarbe
 
 import streamlit as st
 import pandas as pd
@@ -7,8 +7,13 @@ import re
 import os
 import time
 import streamlit.components.v1 as components
+import base64
 
+def get_base64(file_path):
+    with open(file_path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
+# Anklickbares Phrasem (Button):
 st.markdown("""
 <style>
 div.stButton > button {
@@ -16,11 +21,11 @@ div.stButton > button {
     border: none;
     padding: 0;
     margin: 0;
-    color: #1f77b4;
+    color: #33c7f7;
     text-align: left;
 }
 div.stButton > button {
-    color: #1f77b4;
+    color: #33c7f7;
     font-size: 0.95rem;
 }
 
@@ -152,14 +157,13 @@ def normalize_word(word):
 
     return word
 
-
+# -----------------------------
+# Textsuche (Phrasem + Themen)
+# -----------------------------
 
 def search_phrasemes(df, query, mode, theme_filter, style_filter):
     results = df.copy()
 
-    # -----------------------------
-    # Textsuche (Phrasem + Themen)
-    # -----------------------------
     if query:
         words = query.lower().split()
 
@@ -232,7 +236,7 @@ def highlight_words(text, highlight_words, gray=False):
         pattern = re.compile(rf"\b{re.escape(w)}\b", re.IGNORECASE)
 
         if gray:
-            replacement = lambda m: f"<span style='color:#777'><em>{m.group(0)}</em></span>"
+            replacement = lambda m: f"<span style='color:#ADBED2'><em>{m.group(0)}</em></span>"
         else:
             replacement = lambda m: f"<em>{m.group(0)}</em>"
 
@@ -241,9 +245,12 @@ def highlight_words(text, highlight_words, gray=False):
     return text
 
 
+# -----------------------------
+# Phraseme nach Themen - Die Liste
+# -----------------------------
 
 def show_list_by_themes():
-    st.header("📚 Phraseme nach Themen")
+    st.header("🗂️ Phraseme nach Themen")
 
     for theme in get_all_themes(df):
         with st.expander(theme, expanded=False):
@@ -277,7 +284,7 @@ def sidebar_navigation():
             "Menü",
             [
                 "Startseite",
-                "Liste nach Themen",
+                "Phraseme nach Themen",
                 "Zufälliges Phrasem",
                 "Theorie Phraseologie",
                 "Impressum",
@@ -290,7 +297,7 @@ def sidebar_navigation():
 
         # Footer im Sidebar
         st.markdown("") 
-        st.markdown( """ <div style=" position: fixed; bottom: 10px; left: 10px; font-size: 0.8em; color: gray; "> GIP-Projekt von MUBIS und RUB <br>Mit Unterstützung vom DAAD </div> """, unsafe_allow_html=True, )
+        st.markdown( """ <div style=" position: fixed; bottom: 10px; left: 10px; font-size: 0.8em; color:#9f9fa5; "> GIP-Projekt von MUBIS und RUB <br>Mit Unterstützung vom DAAD </div> """, unsafe_allow_html=True, )
 
     # Seitenwechsel-Logik AUSSERHALB des Sidebars
     if "last_page" not in st.session_state:
@@ -304,13 +311,14 @@ def sidebar_navigation():
     return page
 
 
+# STARTSEITE:
 
 def show_search_page():
 
     st.markdown(
     """
-    <h1 style="color:#1f77b4;">Phraseologisches Glossar</h1>
-    <h3 style="color:gray;">Deutsch – Mongolisch</h3>
+    <h1 style="color:#33c7f7;">Phraseologisches Glossar</h1>
+    <h3 style="color:#9f9fa5;">Deutsch – Mongolisch</h3>
     """,
     unsafe_allow_html=True,
 )
@@ -382,7 +390,7 @@ def show_results():
         return
 
     st.markdown(
-        f"<h5 style='color:gray'>Treffer gefunden: {len(results)}</h5>",
+        f"<h5 style='color:#9f9fa5'>Treffer gefunden: {len(results)}</h5>",
         unsafe_allow_html=True,
     )
 
@@ -408,7 +416,7 @@ def show_phrasem_card():
     phrasem = results.iloc[idx]
 
     st.markdown(
-        f"<h2 style='color:#1f77b4'>{phrasem['phrasem_de']}</h2>",
+        f"<h2 style='color:#33c7f7'>{phrasem['phrasem_de']}</h2>",
         unsafe_allow_html=True,
     )
 
@@ -468,7 +476,7 @@ def show_phrasem_card():
 
         for i in items:
             st.markdown(
-                f"– <span style='color:#777'><em>{i}</em></span>",
+                f"– <span style='color:#ADBED2'><em>{i}</em></span>",
                 unsafe_allow_html=True
             )
 
@@ -480,8 +488,26 @@ def show_phrasem_card():
     # -------- Navigation --------
     col1, col2 = st.columns(2)
 
+    # Button Styling Weiter/Zürück
+    st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+    font-size: 28px;
+    color: #ADBED2;
+    background-color: transparent;
+    border: none;
+    }
+    div.stButton > button:first-child:hover {
+    color: #33c7f7;
+    }
+    </style>    
+    """, unsafe_allow_html=True)
+
+
+
+
     with col1:
-        if st.button("Zurück"):
+        if st.button("⟵"):
             if st.session_state.active_source == "list":
                 st.session_state.view = "list"
             else:
@@ -491,7 +517,7 @@ def show_phrasem_card():
 
 
     with col2:
-        if st.button("Weiter"):
+        if st.button("⟶"):
             if idx + 1 < len(results):
                 st.session_state.active_index += 1
                 st.rerun()
@@ -530,8 +556,27 @@ if page == "Startseite":
     elif st.session_state.view == "detail":
         show_phrasem_card()
 
+#if page == "Startseite":
 
-elif page == "Liste nach Themen":
+    # Hintergrundbild laden
+    #img_base64 = get_base64("background.png")
+
+    #st.markdown(
+        #f"""
+        #<style>
+        #.stApp {{
+           # background-image: url("data:image/png;base64,{img_base64}");
+           # background-size: cover;
+            #background-position: center;
+            #background-repeat: no-repeat;
+        #}}
+        #</style>
+        #""",
+        #unsafe_allow_html=True
+    #)
+
+
+elif page == "Phraseme nach Themen":
     st.session_state.random_mode = False
 
     if st.session_state.view == "detail":
@@ -542,13 +587,14 @@ elif page == "Liste nach Themen":
 
 
 elif page == "Zufälliges Phrasem":
+    st.header("🎲 Zufälliges Phrasem")
     st.session_state.random_mode = True
     show_random_phrasem()
     show_phrasem_card()
 
 
 elif page == "Theorie Phraseologie":
-    st.header("Theorie Phraseologie")
+    st.header("📚 Theorie Phraseologie")
     st.write("Hier kommt später die Theorie …")
 
 
