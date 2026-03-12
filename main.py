@@ -14,23 +14,23 @@ def get_base64(file_path):
         return base64.b64encode(f.read()).decode()
     
 
-# -------------------------------
-# Custom CSS für Hamburger Button
-# -------------------------------
-custom_css = """
+# --------------------------------------------------
+# Custom Hamburger Icon for Sidebar Toggle
+# --------------------------------------------------
+
+st.markdown("""
 <style>
 
-/* Original Icon verstecken */
-button[data-testid="stBaseButton-headerNoPadding"] svg path {
+/* Original Streamlit Icon verstecken */
+button[kind="header"] svg {
     display: none !important;
 }
 
-/* Eigenes Hamburger Icon */
-button[data-testid="stBaseButton-headerNoPadding"]::before {
+/* Eigenes Hamburger Icon erzeugen */
+button[kind="header"]::before {
     content: "";
     position: relative;
-    top: -6px;
-    left: 12px;
+    display: inline-block;
     width: 20px;
     height: 2px;
     background: currentColor;
@@ -39,10 +39,13 @@ button[data-testid="stBaseButton-headerNoPadding"]::before {
         0 12px currentColor;
 }
 
-</style>
-"""
+/* Button etwas größer machen (optional, besser für Handy) */
+button[kind="header"] {
+    padding-top: 6px;
+}
 
-st.markdown(custom_css, unsafe_allow_html=True)
+</style>
+""", unsafe_allow_html=True)
 
 
 
