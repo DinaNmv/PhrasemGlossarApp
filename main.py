@@ -12,42 +12,6 @@ import base64
 def get_base64(file_path):
     with open(file_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
-    
-
-# --------------------------------------------------
-# Custom Hamburger Icon for Sidebar Toggle
-# --------------------------------------------------
-
-st.markdown("""
-<style>
-
-/* Original Streamlit Icon verstecken */
-button[kind="header"] svg {
-    display: none !important;
-}
-
-/* Eigenes Hamburger Icon erzeugen */
-button[kind="header"]::before {
-    content: "";
-    position: relative;
-    display: inline-block;
-    width: 20px;
-    height: 2px;
-    background: currentColor;
-    box-shadow:
-        0 6px currentColor,
-        0 12px currentColor;
-}
-
-/* Button etwas größer machen (optional, besser für Handy) */
-button[kind="header"] {
-    padding-top: 6px;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-
 
 # Anklickbares Phrasem (Button):
 st.markdown("""
@@ -334,26 +298,14 @@ def sidebar_navigation():
             key="page_radio"
         )
 
-        # JS, um Sidebar nach Auswahl auf mobilen Geräten automatisch zu schließen
-        st.markdown(
-            """
-            <script>
-            const radios = window.parent.document.querySelectorAll('input[type="radio"]');
-            radios.forEach(radio => {
-                radio.addEventListener('change', () => {
-                    const sidebar = window.parent.document.querySelector('.css-1d391kg'); // Streamlit Sidebar
-                    if (sidebar) { sidebar.style.display = 'none'; }
-                });
-            });
-            </script>
-            """,
-            unsafe_allow_html=True
-        )
-    # Footer im Sidebar
+        # Abstand nach unten
+        #st.markdown("<br><br><br><br>", unsafe_allow_html=True)
+
+        # Footer im Sidebar
         st.markdown("") 
         st.markdown( """ <div style=" position: fixed; bottom: 10px; left: 10px; font-size: 0.8em; color:#9f9fa5; "> GIP-Projekt von MUBIS und RUB <br>Mit Unterstützung vom DAAD <br> <br></div> """, unsafe_allow_html=True, )
 
-    # Seite gespeichert in Session State für Logik
+    # Seitenwechsel-Logik AUSSERHALB des Sidebars
     if "last_page" not in st.session_state:
         st.session_state.last_page = page
 
@@ -363,8 +315,6 @@ def sidebar_navigation():
         st.session_state.last_page = page
 
     return page
-
-
 
 
 # STARTSEITE:
