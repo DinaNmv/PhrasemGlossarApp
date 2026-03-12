@@ -1,4 +1,4 @@
-#Code - Version 10.03.2026 20.50 - Neue Hintergrund- und Schriftfarbe
+#Code - Version 11.03.2026 15.30 - Neue Hintergrund- und Schriftfarbe, Navi expanded, gip
 
 import streamlit as st
 import pandas as pd
@@ -252,8 +252,14 @@ def highlight_words(text, highlight_words, gray=False):
 def show_list_by_themes():
     st.header("🗂️ Phraseme nach Themen")
 
+
     for theme in get_all_themes(df):
-        with st.expander(theme, expanded=False):
+        expanded = (
+            "active_theme" in st.session_state
+            and st.session_state.active_theme == theme
+        )
+
+        with st.expander(theme, expanded=expanded):
 
             subset = df[
                 (df["thema_1"] == theme)
@@ -262,6 +268,7 @@ def show_list_by_themes():
             ].reset_index(drop=True)
 
             for idx, row in subset.iterrows():
+
                 if st.button(
                     f"– {row['phrasem_de']}",
                     key=f"accordion_{theme}_{row['phrasem_id']}"
@@ -269,10 +276,9 @@ def show_list_by_themes():
                     st.session_state.active_results = subset
                     st.session_state.active_index = idx
                     st.session_state.active_source = "list"
+                    st.session_state.active_theme = theme  # NEU
                     st.session_state.view = "detail"
                     st.rerun()
-
-
 
 
 # --------------------------------------------------
@@ -292,12 +298,30 @@ def sidebar_navigation():
             key="page_radio"
         )
 
+        # JS einfügen, um Sidebar auf Mobil automatisch zu schließen
+        st.markdown(
+            """
+            <script>
+            // Prüfen ob mobil (Breite < 768px)
+            if(window.innerWidth < 768){
+                const sidebar = window.parent.document.querySelector('[aria-label="Sidebar"]');
+                if(sidebar){
+                    sidebar.classList.remove('css-1v3fvcr');  // Sidebar offen Klasse entfernen
+                }
+            }
+            </script>
+            """,
+            unsafe_allow_html=True
+        )
+
+    #return page
+
         # Abstand nach unten
         #st.markdown("<br><br><br><br>", unsafe_allow_html=True)
 
         # Footer im Sidebar
         st.markdown("") 
-        st.markdown( """ <div style=" position: fixed; bottom: 10px; left: 10px; font-size: 0.8em; color:#9f9fa5; "> GIP-Projekt von MUBIS und RUB <br>Mit Unterstützung vom DAAD </div> """, unsafe_allow_html=True, )
+        st.markdown( """ <div style=" position: fixed; bottom: 10px; left: 10px; font-size: 0.8em; color:#9f9fa5; "> GIP-Projekt von MUBIS und RUB <br>Mit Unterstützung vom DAAD <br> <br></div> """, unsafe_allow_html=True, )
 
     # Seitenwechsel-Logik AUSSERHALB des Sidebars
     if "last_page" not in st.session_state:
@@ -504,10 +528,8 @@ def show_phrasem_card():
     """, unsafe_allow_html=True)
 
 
-
-
     with col1:
-        if st.button("⟵"):
+        if st.button("⟵ zurück"):
             if st.session_state.active_source == "list":
                 st.session_state.view = "list"
             else:
@@ -517,7 +539,7 @@ def show_phrasem_card():
 
 
     with col2:
-        if st.button("⟶"):
+        if st.button("weiter ⟶"):
             if idx + 1 < len(results):
                 st.session_state.active_index += 1
                 st.rerun()
@@ -636,5 +658,6 @@ elif page == "Impressum":
         st.caption(f"📊 Datenstand: {df.iloc[0]['version']}")
     else:
         st.caption("📊 Datenstand: nicht angegeben")
+    st.write("  App-Version: 11.03.2026 15.30 - Neue Hintergrund- und Schriftfarbe, Navi expanded, gip")
 
 
