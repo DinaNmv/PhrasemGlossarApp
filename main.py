@@ -298,32 +298,26 @@ def sidebar_navigation():
             key="page_radio"
         )
 
-        # JS einfügen, um Sidebar auf Mobil automatisch zu schließen
+        # JS, um Sidebar nach Auswahl auf mobilen Geräten automatisch zu schließen
         st.markdown(
             """
             <script>
-            // Prüfen ob mobil (Breite < 768px)
-            if(window.innerWidth < 768){
-                const sidebar = window.parent.document.querySelector('[aria-label="Sidebar"]');
-                if(sidebar){
-                    sidebar.classList.remove('css-1v3fvcr');  // Sidebar offen Klasse entfernen
-                }
-            }
+            const radios = window.parent.document.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    const sidebar = window.parent.document.querySelector('.css-1d391kg'); // Streamlit Sidebar
+                    if (sidebar) { sidebar.style.display = 'none'; }
+                });
+            });
             </script>
             """,
             unsafe_allow_html=True
         )
-
-    #return page
-
-        # Abstand nach unten
-        #st.markdown("<br><br><br><br>", unsafe_allow_html=True)
-
-        # Footer im Sidebar
+    # Footer im Sidebar
         st.markdown("") 
         st.markdown( """ <div style=" position: fixed; bottom: 10px; left: 10px; font-size: 0.8em; color:#9f9fa5; "> GIP-Projekt von MUBIS und RUB <br>Mit Unterstützung vom DAAD <br> <br></div> """, unsafe_allow_html=True, )
 
-    # Seitenwechsel-Logik AUSSERHALB des Sidebars
+    # Seite gespeichert in Session State für Logik
     if "last_page" not in st.session_state:
         st.session_state.last_page = page
 
@@ -333,6 +327,8 @@ def sidebar_navigation():
         st.session_state.last_page = page
 
     return page
+
+
 
 
 # STARTSEITE:
