@@ -9,6 +9,24 @@ import time
 import streamlit.components.v1 as components
 import base64
 
+st.markdown("""
+<style>
+
+/* komplette obere Streamlit Toolbar ausblenden */
+[data-testid="stToolbar"] {
+    visibility: hidden;
+    height: 0px;
+}
+
+/* Menü rechts oben entfernen */
+[data-testid="stDecoration"] {
+    visibility: hidden;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
 def get_base64(file_path):
     with open(file_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
@@ -631,7 +649,7 @@ elif page == "Impressum":
 
 
     st.markdown("---")
-    st.info("App-Version 13.03.2026 18.00 - Banner")
+    st.info("App-Version 13.03.2026 18.00 - Banner, ohne StreamlitMenü")
     if "version" in df.columns:
         st.caption(f"Datenstand: {df.iloc[0]['version']}")
     else:
