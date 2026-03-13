@@ -9,32 +9,33 @@ import time
 import streamlit.components.v1 as components
 import base64
 
+import streamlit as st
 
+# -------------------------------------------------
+# Streamlit UI bereinigen (Cloud kompatibel)
+# -------------------------------------------------
 
-# -----------------------------------
-# Streamlit UI aufräumen
-# -----------------------------------
 st.markdown("""
 <style>
 
-/* obere rechte Toolbar (Fork, Github, Share) verstecken */
-[data-testid="stToolbar"] {
-    display: none !important;
+/* NUR rechte Toolbar oben ausblenden (Fork, GitHub, Share) */
+header [data-testid="stToolbar"]{
+    display:none;
 }
 
-/* untere Streamlit-Branding-Leiste verstecken */
-[data-testid="stStatusWidget"] {
-    display: none !important;
+/* Menü-Button links sichtbar lassen */
+button[data-testid="baseButton-header"]{
+    display:flex !important;
 }
 
-/* Streamlit Footer (Made with Streamlit) verstecken */
-footer {
-    visibility: hidden;
+/* Streamlit Footer komplett verstecken */
+footer{
+    visibility:hidden;
 }
 
-/* Entwicklerinformation unten entfernen */
-[data-testid="stDecoration"] {
-    display: none;
+/* "Made with Streamlit" + Entwickler-Info verstecken */
+[data-testid="stStatusWidget"]{
+    display:none;
 }
 
 </style>
