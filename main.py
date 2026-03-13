@@ -1,4 +1,4 @@
-#Code - Version 11.03.2026 15.30 - Neue Hintergrund- und Schriftfarbe, Navi expanded, gip
+#Code - Version 13.03.2026 18.00 - Banner
 
 import streamlit as st
 import pandas as pd
@@ -64,8 +64,8 @@ if "active_source" not in st.session_state:
 if "last_page" not in st.session_state:
     st.session_state.last_page = "Startseite"
 
-if "list_scroll_key" not in st.session_state:
-    st.session_state.list_scroll_key = None
+#if "list_scroll_key" not in st.session_state:
+    #st.session_state.list_scroll_key = None
 
 
 
@@ -298,10 +298,7 @@ def sidebar_navigation():
             key="page_radio"
         )
 
-        # Abstand nach unten
-        #st.markdown("<br><br><br><br>", unsafe_allow_html=True)
-
-        # Footer im Sidebar
+    # Footer im Sidebar
         st.markdown("") 
         st.markdown( """ <div style=" position: fixed; bottom: 10px; left: 10px; font-size: 0.8em; color:#9f9fa5; "> GIP-Projekt von MUBIS und RUB <br>Mit Unterstützung vom DAAD <br> <br></div> """, unsafe_allow_html=True, )
 
@@ -323,7 +320,7 @@ def show_search_page():
 
     st.markdown(
     """
-    <h1 style="color:#33c7f7;">Phraseologisches Glossar</h1>
+    <h2 style="color:#33c7f7;">Phraseologisches Glossar</h2>
     <h3 style="color:#9f9fa5;">Deutsch – Mongolisch</h3>
     """,
     unsafe_allow_html=True,
@@ -486,9 +483,6 @@ def show_phrasem_card():
                 unsafe_allow_html=True
             )
 
-
-
-
     st.divider()
 
     # -------- Navigation --------
@@ -517,8 +511,6 @@ def show_phrasem_card():
             else:
                 st.session_state.view = "search"
             st.rerun()
-
-
 
     with col2:
         if st.button("weiter ⟶"):
@@ -551,6 +543,28 @@ def show_random_phrasem():
 page = sidebar_navigation()
 
 if page == "Startseite":
+
+# Banner oben   
+    banner_base64 = get_base64("banner_phrasemapp.png")
+
+    st.markdown(
+        f"""
+        <style>
+        .top-banner {{
+            background-image: url("data:image/png;base64,{banner_base64}");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 140px;
+            margin-bottom: 20px;
+        }}
+        </style>
+        <div class="top-banner"></div>
+        """,
+        unsafe_allow_html=True
+    )    
+    
+    
     st.session_state.random_mode = False
 
     if st.session_state.view == "search":
@@ -560,24 +574,6 @@ if page == "Startseite":
     elif st.session_state.view == "detail":
         show_phrasem_card()
 
-#if page == "Startseite":
-
-    # Hintergrundbild laden
-    #img_base64 = get_base64("background.png")
-
-    #st.markdown(
-        #f"""
-        #<style>
-        #.stApp {{
-           # background-image: url("data:image/png;base64,{img_base64}");
-           # background-size: cover;
-            #background-position: center;
-            #background-repeat: no-repeat;
-        #}}
-        #</style>
-        #""",
-        #unsafe_allow_html=True
-    #)
 
 
 elif page == "Phraseme nach Themen":
@@ -635,11 +631,11 @@ elif page == "Impressum":
 
 
     st.markdown("---")
-    
+    st.info("App-Version 13.03.2026 18.00 - Banner")
     if "version" in df.columns:
-        st.caption(f"📊 Datenstand: {df.iloc[0]['version']}")
+        st.caption(f"Datenstand: {df.iloc[0]['version']}")
     else:
-        st.caption("📊 Datenstand: nicht angegeben")
-    st.write("  App-Version: 11.03.2026 15.30 - Neue Hintergrund- und Schriftfarbe, Navi expanded, gip")
+        st.caption("Datenstand: nicht angegeben")
+    
 
 
