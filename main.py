@@ -26,6 +26,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+<style>
+
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+</style>
+""", unsafe_allow_html=True)
+
 
 def get_base64(file_path):
     with open(file_path, "rb") as f:
