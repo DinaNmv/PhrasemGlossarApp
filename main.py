@@ -11,6 +11,32 @@ import base64
 
 import streamlit as st
 
+custom_css = """
+<style>
+/* Hide original SVG paths in the toggle button */
+button[data-testid="stBaseButton-headerNoPadding"] svg path {
+    display: none !important;
+}
+
+button[data-testid="stBaseButton-headerNoPadding"]::before {
+    content: "";
+    position: relative;
+    top: -6px;
+    left: 12px;
+    width: 20px;
+    height: 2px;
+    background: currentColor;
+    box-shadow:
+        0 6px currentColor,
+        0 12px currentColor;
+}
+</style>
+"""
+
+# Inject CSS into the app
+st.markdown(custom_css, unsafe_allow_html=True)
+
+
 # -------------------------------------------------
 # Streamlit UI bereinigen (Cloud kompatibel)
 # -------------------------------------------------
