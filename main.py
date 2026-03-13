@@ -9,28 +9,33 @@ import time
 import streamlit.components.v1 as components
 import base64
 
+
+
+# -----------------------------------
+# Streamlit UI aufräumen
+# -----------------------------------
 st.markdown("""
 <style>
 
-/* komplette obere Streamlit Toolbar ausblenden */
+/* obere rechte Toolbar (Fork, Github, Share) verstecken */
 [data-testid="stToolbar"] {
-    visibility: hidden;
-    height: 0px;
+    display: none !important;
 }
 
-/* Menü rechts oben entfernen */
+/* untere Streamlit-Branding-Leiste verstecken */
+[data-testid="stStatusWidget"] {
+    display: none !important;
+}
+
+/* Streamlit Footer (Made with Streamlit) verstecken */
+footer {
+    visibility: hidden;
+}
+
+/* Entwicklerinformation unten entfernen */
 [data-testid="stDecoration"] {
-    visibility: hidden;
+    display: none;
 }
-
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<style>
-
-footer {visibility: hidden;}
-header {visibility: hidden;}
 
 </style>
 """, unsafe_allow_html=True)
@@ -658,7 +663,7 @@ elif page == "Impressum":
 
 
     st.markdown("---")
-    st.info("App-Version 13.03.2026 18.00 - Banner, ohne StreamlitMenü")
+    st.info("App-Version 13.03.2026 20.00 - Banner, ohne StreamlitMenü")
     if "version" in df.columns:
         st.caption(f"Datenstand: {df.iloc[0]['version']}")
     else:
