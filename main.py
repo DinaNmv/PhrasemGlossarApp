@@ -17,15 +17,13 @@ import base64
 
 st.markdown("""
 <style>
-
+/* Menü-Button links sichtbar lassen */
+button[data-testid="baseButton-header]{
+    display:flex;
+}    
 /* NUR rechte Toolbar oben ausblenden (Fork, GitHub, Share) */
 header [data-testid="stToolbar"]{
     display:none;
-}
-
-/* Menü-Button links sichtbar lassen */
-button[data-testid="baseButton-header]{
-    display:true;
 }
 
 </style>
