@@ -24,8 +24,8 @@ header [data-testid="stToolbar"]{
 }
 
 /* Menü-Button links sichtbar lassen */
-button[data-testid="baseButton-headerNoPadding"]{
-    display:flex !important;
+button[data-testid="baseButton-header]{
+    display:true;
 }
 
 </style>
